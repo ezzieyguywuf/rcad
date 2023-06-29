@@ -1,15 +1,72 @@
-fn main() {
-  let v0 = TopoVertex { id: Id(0) };
-  let v1 = TopoVertex { id: Id(1) };
-  let chord = TopoEdge::Chord(Id(0), v0, v1);
+#[derive(Debug)]
+pub struct Point {
+  pub x: f64,
+  pub y: f64,
+  pub z: f64,
+}
 
-  println!("chord: {}", chord);
+#[derive(Debug)]
+pub struct Vertex {
+  topo_vertex: TopoVertex,
+  pub point: Point,
+}
+
+pub struct Model {
+  next_vertex_id: Id,
+  vertices: Vec<Vertex>,
+}
+
+impl Model {
+  pub fn new() -> Model {
+    Model {
+      next_vertex_id: 0,
+      vertices: Vec::new(),
+    }
+  }
+  pub fn make_vertex(&mut self, point: Point) -> Vertex {
+    let id = self.next_vertex_id;
+    self.next_vertex_id += 1;
+
+    let topo_vertex = TopoVertex { id };
+    Vertex { topo_vertex, point }
+  }
+}
+
+impl std::fmt::Display for Vertex {
+  fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    write!(
+      f,
+      "Vertex{{id: {}, point: {:?}}}",
+      self.topo_vertex.id, self.point
+    )
+  }
+}
+
+fn main() {
+  let mut model = Model::new();
+  let p0 = Point {
+    x: 10.0,
+    y: 20.0,
+    z: 30.0,
+  };
+  let p1 = Point {
+    x: 40.0,
+    y: 50.0,
+    z: 60.0,
+  };
+
+  let v0 = model.make_vertex(p0);
+  let v1 = model.make_vertex(p1);
+  // let chord = TopoEdge::Chord(0, v0, v1);
+
+  // println!("chord: {}", chord);
+  println!("v0: {}", v0);
+  println!("v1: {}", v1);
 }
 
 // By convention, everything under main will eventually be private/implementation details.
 
-#[derive(Debug)]
-struct Id(usize);
+type Id = usize;
 
 #[derive(Debug)]
 struct TopoVertex {
@@ -26,12 +83,6 @@ enum TopoEdge {
 // enum TopoFace {
 //   Face(),
 // }
-
-impl std::fmt::Display for Id {
-  fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-    write!(f, "id: {}", self.0)
-  }
-}
 
 impl std::fmt::Display for TopoVertex {
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
