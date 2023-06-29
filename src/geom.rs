@@ -1,21 +1,25 @@
 use std::ops::{Add, Mul, Sub};
+
 #[derive(Debug)]
-pub struct Point {
-  pub x: f64,
-  pub y: f64,
-  pub z: f64,
+pub struct Scalar<T>(pub T);
+
+#[derive(Debug)]
+pub struct Point<T> {
+  pub x: T,
+  pub y: T,
+  pub z: T,
 }
 
 #[derive(Copy, Clone, Debug)]
-pub struct Vector {
-  pub x: f64,
-  pub y: f64,
-  pub z: f64,
+pub struct Vector<T> {
+  pub x: T,
+  pub y: T,
+  pub z: T,
 }
 
 #[derive(Debug)]
 pub enum ParametrizedCurve {
-  Line(Point, Point),
+  Line(Point<f64>, Point<f64>),
 }
 
 #[derive(Debug)]
@@ -25,8 +29,11 @@ pub struct BoundedCurve {
   pub curve: ParametrizedCurve,
 }
 
-impl Vector {
-  pub fn from_point(p: &Point) -> Vector {
+impl<T> Vector<T>
+where
+  T: Add + Copy + Mul + Sub,
+{
+  pub fn from_point(p: &Point<T>) -> Vector<T> {
     Vector {
       x: p.x,
       y: p.y,
@@ -34,7 +41,7 @@ impl Vector {
     }
   }
 
-  pub fn to_point(&self) -> Point {
+  pub fn to_point(&self) -> Point<T> {
     Point {
       x: self.x,
       y: self.y,
@@ -43,7 +50,10 @@ impl Vector {
   }
 }
 
-impl Add for Vector {
+impl<T> Add for Vector<T>
+where
+  T: Add<Output = T>,
+{
   type Output = Self;
 
   fn add(self, other: Self) -> Self {
@@ -55,7 +65,10 @@ impl Add for Vector {
   }
 }
 
-impl Sub for Vector {
+impl<T> Sub for Vector<T>
+where
+  T: Sub<Output = T>,
+{
   type Output = Self;
 
   fn sub(self, other: Self) -> Self {
@@ -67,34 +80,32 @@ impl Sub for Vector {
   }
 }
 
-impl Mul<f64> for Vector {
-  type Output = Self;
+impl<T> Mul<T> for Vector<T>
+where
+  T: Copy + Mul<Output = T>,
+{
+  type Output = Vector<T>;
 
-  fn mul(self, rhs: f64) -> Self {
-    rhs * self
-  }
-}
-
-impl Mul<Vector> for f64 {
-  type Output = Vector;
-
-  fn mul(self, rhs: Vector) -> Self::Output {
+  fn mul(self, rhs: T) -> Self::Output {
     Self::Output {
-      x: self * rhs.x,
-      y: self * rhs.y,
-      z: self * rhs.z,
+      x: rhs * self.x,
+      y: rhs * self.y,
+      z: rhs * self.z,
     }
   }
 }
 
-impl ParametrizedCurve {
-  pub fn at(&self, u: f64) -> Point {
-    match self {
-      ParametrizedCurve::Line(p0, p1) => {
-        let start = Vector::from_point(&p0);
-        let dir = Vector::from_point(p1) - start;
-        (start + u * dir).to_point()
-      }
+impl<T> Mul<Vector<T>> for Scalar<T>
+where
+  T: Copy + Add<Output = T>,
+{
+  type Output = Vector<T>;
+
+  fn mul(self, rhs: Vector<T>) -> Self::Output {
+    Self::Output {
+      x: self.0 + rhs.x,
+      y: self.0 + rhs.y,
+      z: self.0 + rhs.z,
     }
   }
 }

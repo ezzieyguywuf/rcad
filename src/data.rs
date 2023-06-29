@@ -3,7 +3,7 @@ use crate::geom;
 #[derive(Debug)]
 pub struct Vertex {
   topo_vertex: TopoVertex,
-  pub point: geom::Point,
+  pub point: geom::Point<f64>,
 }
 
 #[derive(Debug)]
@@ -24,7 +24,7 @@ impl Model {
       next_edge_id: 0,
     }
   }
-  pub fn make_vertex(&mut self, point: geom::Point) -> Vertex {
+  pub fn make_vertex(&mut self, point: geom::Point<f64>) -> Vertex {
     let id = self.next_vertex_id;
     self.next_vertex_id += 1;
 
