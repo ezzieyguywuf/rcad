@@ -1,3 +1,13 @@
+fn main() {
+  let v0 = TopoVertex { id: Id(0) };
+  let v1 = TopoVertex { id: Id(1) };
+  let chord = TopoEdge::Chord(Id(0), v0, v1);
+
+  println!("chord: {}", chord);
+}
+
+// By convention, everything under main will eventually be private/implementation details.
+
 #[derive(Debug)]
 struct Id(usize);
 
@@ -16,14 +26,6 @@ enum TopoEdge {
 // enum TopoFace {
 //   Face(),
 // }
-
-fn main() {
-  let v0 = TopoVertex { id: Id(0) };
-  let v1 = TopoVertex { id: Id(1) };
-  let chord = TopoEdge::Chord(Id(0), v0, v1);
-
-  println!("chord: {}", chord);
-}
 
 impl std::fmt::Display for Id {
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
