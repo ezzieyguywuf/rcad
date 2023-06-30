@@ -90,8 +90,6 @@ where
     let p1 = other.at(u);
     let squared_dist = Vector::from(p1 - p0).mag_squared();
 
-    println!("squared_Dist: {}", squared_dist);
-
     // Return None if no intersection
     if tol.map_or_else(|| p0 != p1, |val| squared_dist > (val * val)) {
       return None;
