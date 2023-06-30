@@ -1,9 +1,6 @@
 use std::fmt::{Debug, Display};
 use std::ops::{Add, Mul, Sub};
 
-// TODO: maybe try to get rid of this. It's specifically here to make multiplying Vector by a
-// scalar value "easier" - really, I just couldn't find a way to do `impl<T> Mul<Vector<T>> for T`,
-// so this is an alternative
 #[derive(Debug)]
 pub struct Scalar<T>(pub T);
 
