@@ -1,5 +1,8 @@
 use std::ops::{Add, Mul, Sub};
 
+// TODO: maybe try to get rid of this. It's specifically here to make multiplying Vector by a
+// scalar value "easier" - really, I just couldn't find a way to do `impl<T> Mul<Vector<T>> for T`,
+// so this is an alternative
 #[derive(Debug)]
 pub struct Scalar<T>(pub T);
 
@@ -17,21 +20,62 @@ pub struct Vector<T> {
   pub z: T,
 }
 
-#[derive(Debug)]
-pub enum ParametrizedCurve {
-  Line(Point<f64>, Point<f64>),
+pub trait ParametrizedCurve {
+  type Scalar;
+  fn at(&self, u: Self::Scalar) -> Point<Self::Scalar>;
 }
 
 #[derive(Debug)]
-pub struct BoundedCurve {
-  pub start: f64,
-  pub end: f64,
-  pub curve: ParametrizedCurve,
+pub struct BoundedLine<T> {
+  origin: Vector<T>,
+  dir: Vector<T>,
+}
+
+impl<T> BoundedLine<T>
+where
+  T: Copy + Clone + Sub<Output = T>,
+{
+  pub fn new(p0: Point<T>, p1: Point<T>) -> BoundedLine<T> {
+    let origin = p0.to_vector();
+    let dir = p1.to_vector() - origin;
+    BoundedLine { origin, dir }
+  }
+}
+
+impl<T> ParametrizedCurve for BoundedLine<T>
+where
+  T: Add<Output = T> + Copy + Clone + Mul<Output = T>,
+{
+  type Scalar = T;
+  fn at(&self, u: T) -> Point<T> {
+    (self.origin + Scalar(u) * self.dir).to_point()
+  }
+}
+
+impl<T> Point<T>
+where
+  T: Copy + Clone,
+{
+  pub fn from_vector(v: &Vector<T>) -> Point<T> {
+    Point {
+      x: v.x,
+      y: v.y,
+      z: v.z,
+    }
+  }
+
+  pub fn to_vector(&self) -> Vector<T> {
+    Vector {
+      x: self.x,
+      y: self.y,
+      z: self.z,
+    }
+  }
 }
 
 impl<T> Vector<T>
 where
-  T: Add + Copy + Mul + Sub,
+  T: Copy + Clone,
 {
   pub fn from_point(p: &Point<T>) -> Vector<T> {
     Vector {
@@ -46,6 +90,21 @@ where
       x: self.x,
       y: self.y,
       z: self.z,
+    }
+  }
+}
+
+impl<T> Sub for Point<T>
+where
+  T: Sub<Output = T>,
+{
+  type Output = Self;
+
+  fn sub(self, other: Self) -> Self {
+    Self {
+      x: self.x - other.x,
+      y: self.y - other.y,
+      z: self.z - other.z,
     }
   }
 }
@@ -82,7 +141,7 @@ where
 
 impl<T> Mul<T> for Vector<T>
 where
-  T: Copy + Mul<Output = T>,
+  T: Copy + Clone + Mul<Output = T>,
 {
   type Output = Vector<T>;
 
@@ -97,7 +156,7 @@ where
 
 impl<T> Mul<Vector<T>> for Scalar<T>
 where
-  T: Copy + Add<Output = T>,
+  T: Copy + Clone + Add<Output = T>,
 {
   type Output = Vector<T>;
 
