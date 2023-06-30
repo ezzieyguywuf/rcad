@@ -36,8 +36,8 @@ where
   T: Copy + Clone + Sub<Output = T>,
 {
   pub fn new(p0: Point<T>, p1: Point<T>) -> BoundedLine<T> {
-    let origin = p0.to_vector();
-    let dir = p1.to_vector() - origin;
+    let origin = Vector::from(p0);
+    let dir = Vector::from(p1) - origin;
     BoundedLine { origin, dir }
   }
 }
@@ -48,48 +48,26 @@ where
 {
   type Scalar = T;
   fn at(&self, u: T) -> Point<T> {
-    (self.origin + Scalar(u) * self.dir).to_point()
+    Point::from(self.origin + Scalar(u) * self.dir)
   }
 }
 
-impl<T> Point<T>
-where
-  T: Copy + Clone,
-{
-  pub fn from_vector(v: &Vector<T>) -> Point<T> {
-    Point {
-      x: v.x,
-      y: v.y,
-      z: v.z,
-    }
-  }
-
-  pub fn to_vector(&self) -> Vector<T> {
+impl<T> From<Point<T>> for Vector<T> {
+  fn from(point: Point<T>) -> Vector<T> {
     Vector {
-      x: self.x,
-      y: self.y,
-      z: self.z,
+      x: point.x,
+      y: point.y,
+      z: point.z,
     }
   }
 }
 
-impl<T> Vector<T>
-where
-  T: Copy + Clone,
-{
-  pub fn from_point(p: &Point<T>) -> Vector<T> {
-    Vector {
-      x: p.x,
-      y: p.y,
-      z: p.z,
-    }
-  }
-
-  pub fn to_point(&self) -> Point<T> {
+impl<T> From<Vector<T>> for Point<T> {
+  fn from(vector: Vector<T>) -> Point<T> {
     Point {
-      x: self.x,
-      y: self.y,
-      z: self.z,
+      x: vector.x,
+      y: vector.y,
+      z: vector.z,
     }
   }
 }
