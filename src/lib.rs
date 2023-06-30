@@ -1,2 +1,2 @@
-pub mod geom;
 pub mod data;
+pub mod geom;

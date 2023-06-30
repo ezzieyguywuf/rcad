@@ -32,3 +32,20 @@ sure this would be a super details model by why the heck not?
 
 Except what's the tradeoff? Will it become incredibly onerous to carry around so
 many "unit"s of data for the larger things? Will it be a memory hog?
+
+Square Root
+-----------
+Figure out what we want to do here. I guess it's like a slow operation or w/e,
+but we need it if we want to calculate the magnitude of a vector.
+
+We've gotten around taht (I think) for now by instead just using the square of
+the magnitude, but somehow I think we're eventually going to actually want the
+magnitude.
+
+One option is the num-traits crate which defines a `Float` trait that requires a
+`sqrt` method. This is useful b/c we can add a trait bound of `Float` to our
+`T`s, but at the end of the day this will essentially mean we're restricting
+ourselves to floating point numbers.
+
+Ideally, (as discussed above about Scalar) I'd like to shy away from
+floating-point numbers in order to provide high accuracy.

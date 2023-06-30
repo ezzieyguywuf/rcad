@@ -1,6 +1,7 @@
 use crate::geom;
+use std::cmp::PartialOrd;
 use std::fmt::{Debug, Display};
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Debug)]
 pub struct Vertex<T>
@@ -46,7 +47,15 @@ impl Model {
 
   pub fn make_chord_edge<T>(&mut self, v0: &Vertex<T>, v1: &Vertex<T>) -> Edge<geom::BoundedLine<T>>
   where
-    T: Add<Output = T> + Copy + Clone + Mul<Output = T> + Sub<Output = T>,
+    T: Add<Output = T>
+      + Copy
+      + Clone
+      + Div<Output = T>
+      + Debug
+      + Display
+      + Mul<Output = T>
+      + PartialOrd
+      + Sub<Output = T>,
   {
     let id = self.next_edge_id;
     self.next_edge_id += 1;
