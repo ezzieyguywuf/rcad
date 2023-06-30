@@ -1,14 +1,23 @@
 use crate::geom;
+use std::fmt::{Debug, Display};
+use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug)]
-pub struct Vertex {
+pub struct Vertex<T>
+where
+  T: Copy + Clone,
+{
   topo_vertex: TopoVertex,
-  pub point: geom::Point<f64>,
+  pub point: geom::Point<T>,
 }
 
 #[derive(Debug)]
-pub struct Edge {
+pub struct Edge<T>
+where
+  T: geom::ParametrizedCurve,
+{
   topo_edge: TopoEdge,
+  pub curve: T,
 }
 
 pub struct Model {
@@ -24,7 +33,10 @@ impl Model {
       next_edge_id: 0,
     }
   }
-  pub fn make_vertex(&mut self, point: geom::Point<f64>) -> Vertex {
+  pub fn make_vertex<T>(&mut self, point: geom::Point<T>) -> Vertex<T>
+  where
+    T: Copy + Clone,
+  {
     let id = self.next_vertex_id;
     self.next_vertex_id += 1;
 
@@ -32,7 +44,10 @@ impl Model {
     Vertex { topo_vertex, point }
   }
 
-  pub fn make_chord_edge(&mut self, v0: &Vertex, v1: &Vertex) -> Edge {
+  pub fn make_chord_edge<T>(&mut self, v0: &Vertex<T>, v1: &Vertex<T>) -> Edge<geom::BoundedLine<T>>
+  where
+    T: Add<Output = T> + Copy + Clone + Mul<Output = T> + Sub<Output = T>,
+  {
     let id = self.next_edge_id;
     self.next_edge_id += 1;
 
@@ -41,11 +56,16 @@ impl Model {
       id: EdgeId(id),
       vertices,
     };
-    Edge { topo_edge }
+    let curve = geom::BoundedLine::new(v0.point, v1.point);
+
+    Edge { topo_edge, curve }
   }
 }
 
-impl std::fmt::Display for Vertex {
+impl<T> std::fmt::Display for Vertex<T>
+where
+  T: Copy + Clone + Debug,
+{
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
     write!(
       f,
@@ -55,9 +75,12 @@ impl std::fmt::Display for Vertex {
   }
 }
 
-impl std::fmt::Display for Edge {
+impl<T> std::fmt::Display for Edge<T>
+where
+  T: Display + geom::ParametrizedCurve,
+{
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-    write!(f, "Edge{{{}}}", self.topo_edge.id)
+    write!(f, "Edge{{{}, {}}}", self.topo_edge.id, self.curve)
   }
 }
 

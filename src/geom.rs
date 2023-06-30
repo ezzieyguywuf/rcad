@@ -1,3 +1,4 @@
+use std::fmt::{Debug, Display};
 use std::ops::{Add, Mul, Sub};
 
 // TODO: maybe try to get rid of this. It's specifically here to make multiplying Vector by a
@@ -6,8 +7,11 @@ use std::ops::{Add, Mul, Sub};
 #[derive(Debug)]
 pub struct Scalar<T>(pub T);
 
-#[derive(Debug)]
-pub struct Point<T> {
+#[derive(Copy, Clone, Debug)]
+pub struct Point<T>
+where
+  T: Copy + Clone,
+{
   pub x: T,
   pub y: T,
   pub z: T,
@@ -22,7 +26,9 @@ pub struct Vector<T> {
 
 pub trait ParametrizedCurve {
   type Scalar;
-  fn at(&self, u: Self::Scalar) -> Point<Self::Scalar>;
+  fn at(&self, u: Self::Scalar) -> Point<Self::Scalar>
+  where
+    <Self as ParametrizedCurve>::Scalar: Copy;
 }
 
 #[derive(Debug)]
@@ -52,7 +58,34 @@ where
   }
 }
 
-impl<T> From<Point<T>> for Vector<T> {
+impl<T> Display for BoundedLine<T>
+where
+  T: Add<Output = T> + Copy + Clone + Display,
+{
+  fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    let p1 = Point::from(self.dir + self.origin);
+    write!(
+      f,
+      "BoundedLine{{p0: {}, p1: {}}}",
+      Point::from(self.origin),
+      p1
+    )
+  }
+}
+
+impl<T> Display for Point<T>
+where
+  T: Copy + Clone + Display,
+{
+  fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    write!(f, "({}, {}, {})", self.x, self.y, self.z)
+  }
+}
+
+impl<T> From<Point<T>> for Vector<T>
+where
+  T: Copy + Clone,
+{
   fn from(point: Point<T>) -> Vector<T> {
     Vector {
       x: point.x,
@@ -62,7 +95,10 @@ impl<T> From<Point<T>> for Vector<T> {
   }
 }
 
-impl<T> From<Vector<T>> for Point<T> {
+impl<T> From<Vector<T>> for Point<T>
+where
+  T: Copy + Clone,
+{
   fn from(vector: Vector<T>) -> Point<T> {
     Point {
       x: vector.x,
@@ -74,7 +110,7 @@ impl<T> From<Vector<T>> for Point<T> {
 
 impl<T> Sub for Point<T>
 where
-  T: Sub<Output = T>,
+  T: Copy + Clone + Sub<Output = T>,
 {
   type Output = Self;
 
