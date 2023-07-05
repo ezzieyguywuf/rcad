@@ -1,3 +1,4 @@
+use crate::err;
 use crate::geom;
 use std::cmp::PartialOrd;
 use std::fmt::{Debug, Display};
@@ -19,6 +20,19 @@ where
 {
   topo_edge: TopoEdge,
   pub curve: T,
+}
+
+#[derive(Debug)]
+pub struct EdgeChain<T>
+where
+  T: geom::ParametrizedCurve,
+{
+  edges: Vec<Edge<T>>,
+}
+
+#[derive(Debug)]
+pub struct Face {
+  topo_face: TopoFace,
 }
 
 pub struct Model {
@@ -69,6 +83,22 @@ impl Model {
 
     Edge { topo_edge, curve }
   }
+
+  pub fn start_edge_chain<T>(
+    &mut self,
+    v0: &Vertex<T>,
+    v1: &Vertex<T>,
+    v2: &Vertex<T>,
+  ) -> err::Result<EdgeChain<T>>
+  where
+    T: Copy + Clone + geom::ParametrizedCurve,
+    Vertex<T>: PartialEq,
+  {
+    if v0 == v1 || v0 == v2 || v1 == v2 {
+      return Err(err::Geom::CannotCreatePlane("blurg").into());
+    }
+    Ok(EdgeChain { edges: Vec::new() })
+  }
 }
 
 impl<T> std::fmt::Display for Vertex<T>
@@ -101,6 +131,8 @@ where
 struct VertexId(usize);
 #[derive(Copy, Clone, Debug)]
 struct EdgeId(usize);
+#[derive(Copy, Clone, Debug)]
+struct FaceId(usize);
 type Id = usize;
 
 #[derive(Debug)]
@@ -121,9 +153,10 @@ struct TopoEdge {
   vertices: EdgeVertices,
 }
 
-// enum TopoFace {
-//   Face(),
-// }
+#[derive(Debug)]
+struct TopoFace {
+  id: FaceId,
+}
 
 impl std::fmt::Display for VertexId {
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
