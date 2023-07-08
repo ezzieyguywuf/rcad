@@ -1,5 +1,6 @@
 use rcad_lib::data;
 use rcad_lib::geom;
+use rcad_lib::geom::ParametrizedCurve;
 
 fn main() {
   let mut model = data::Model::new();

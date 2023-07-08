@@ -38,6 +38,7 @@ pub struct Face {
 pub struct Model {
   next_vertex_id: Id,
   next_edge_id: Id,
+  next_face_id: Id,
   // TODO add Vec<TopoVertex>, Vec<TopoEdge>
 }
 
@@ -46,6 +47,7 @@ impl Model {
     Model {
       next_vertex_id: 0,
       next_edge_id: 0,
+      next_face_id: 0,
     }
   }
   pub fn make_vertex<T>(&mut self, point: geom::Point<T>) -> Vertex<T>
@@ -89,15 +91,54 @@ impl Model {
     v0: &Vertex<T>,
     v1: &Vertex<T>,
     v2: &Vertex<T>,
-  ) -> err::Result<EdgeChain<T>>
+  ) -> err::Result<EdgeChain<geom::BoundedLine<T>>>
   where
-    T: Copy + Clone + geom::ParametrizedCurve,
+    T: Copy
+      + Add<Output = T>
+      + Clone
+      + Display
+      + Debug
+      + Div<Output = T>
+      + Mul<Output = T>
+      + geom::ParametrizedCurve
+      + PartialOrd
+      + Sub<Output = T>,
     Vertex<T>: PartialEq,
   {
     if v0 == v1 || v0 == v2 || v1 == v2 {
-      return Err(err::Geom::CannotCreatePlane("blurg").into());
+      return Err(
+        err::Geom::CannotCreatePlane("must provide three distinct vertices to establish a plane")
+          .into(),
+      );
     }
-    Ok(EdgeChain { edges: Vec::new() })
+
+    let e0 = self.make_chord_edge(&v0, &v1);
+    let e1 = self.make_chord_edge(&v1, &v2);
+
+    Ok(EdgeChain {
+      edges: vec![e0, e1],
+    })
+  }
+
+  pub fn close_edge_chain<T>(&mut self, chain: &EdgeChain<geom::BoundedLine<T>>) -> Face
+  where
+    T: Copy
+      + Add<Output = T>
+      + Clone
+      + Display
+      + Debug
+      + Div<Output = T>
+      + Mul<Output = T>
+      + geom::ParametrizedCurve
+      + PartialOrd
+      + Sub<Output = T>,
+  {
+    let id = self.next_face_id;
+    self.next_face_id += 1;
+
+    let topo_face = TopoFace { id: FaceId(id) };
+
+    Face { topo_face }
   }
 }
 

@@ -1,3 +1,4 @@
+use num_traits::Zero;
 use std::cmp::{PartialEq, PartialOrd};
 use std::fmt::{Debug, Display};
 use std::ops::{Add, Div, Mul, Sub};
@@ -5,7 +6,7 @@ use std::ops::{Add, Div, Mul, Sub};
 #[derive(Debug)]
 pub struct Scalar<T>(pub T);
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Point<T>
 where
   T: Copy + Clone,
@@ -27,6 +28,23 @@ pub trait ParametrizedCurve {
   fn at(&self, u: Self::Scalar) -> Point<Self::Scalar>
   where
     <Self as ParametrizedCurve>::Scalar: Copy;
+
+  // `tol` is a tolerance for determining if the two lines intersect. If not provided, then
+  // depending on the type of T (e.g. if it's a float) then you might get some unexpected results
+  fn intersection(
+    &self,
+    other: &BoundedLine<Self::Scalar>,
+    tol: Option<Self::Scalar>,
+  ) -> Option<Point<Self::Scalar>>
+  where
+    <Self as ParametrizedCurve>::Scalar: Copy;
+}
+
+pub trait ParametrizedSurface {
+  type Scalar;
+  fn at(&self, u: Self::Scalar, v: Self::Scalar) -> Point<Self::Scalar>
+  where
+    <Self as ParametrizedSurface>::Scalar: Copy;
 }
 
 #[derive(Debug)]
@@ -52,10 +70,24 @@ where
     let dir = Vector::from(p1) - origin;
     BoundedLine { origin, dir }
   }
+}
 
-  // `tol` is a tolerance for determining if the two lines intersect. If not provided, then
-  // depending on the type of T (e.g. if it's a float) then you might get some unexpected results
-  pub fn intersection(&self, other: &BoundedLine<T>, tol: Option<T>) -> Option<Point<T>> {
+impl<T> ParametrizedCurve for BoundedLine<T>
+where
+  T: Add<Output = T>
+    + Copy
+    + Clone
+    + Div<Output = T>
+    + Mul<Output = T>
+    + PartialOrd
+    + Sub<Output = T>,
+{
+  type Scalar = T;
+  fn at(&self, u: T) -> Point<T> {
+    Point::from(self.origin + Scalar(u) * self.dir)
+  }
+
+  fn intersection(&self, other: &BoundedLine<T>, tol: Option<T>) -> Option<Point<T>> {
     // TODO: I _really_ want to know why this didn't work for me
     // https://youtu.be/ELQG5OvmAE8 I'm pretty much stealing his work
     // let r = self.dir;
@@ -109,13 +141,17 @@ where
   }
 }
 
-impl<T> ParametrizedCurve for BoundedLine<T>
+impl<T> Vector<T>
 where
   T: Add<Output = T> + Copy + Clone + Mul<Output = T>,
 {
-  type Scalar = T;
-  fn at(&self, u: T) -> Point<T> {
-    Point::from(self.origin + Scalar(u) * self.dir)
+  pub fn dot(&self, other: Vector<T>) -> T {
+    self.x * other.x + self.y * other.y + self.z * other.z
+  }
+
+  // Returns the square of the magnitude (this avoids the square-root operation)
+  pub fn mag_squared(&self) -> T {
+    self.x * self.x + self.y * self.y + self.z * self.z
   }
 }
 
@@ -178,15 +214,6 @@ where
   }
 }
 
-impl<T> PartialEq for Point<T>
-where
-  T: Copy + Clone + PartialEq,
-{
-  fn eq(&self, other: &Self) -> bool {
-    self.x == other.x && self.y == other.y && self.z == other.z
-  }
-}
-
 impl<T> Sub for Point<T>
 where
   T: Copy + Clone + Sub<Output = T>,
@@ -199,20 +226,6 @@ where
       y: self.y - other.y,
       z: self.z - other.z,
     }
-  }
-}
-
-impl<T> Vector<T>
-where
-  T: Add<Output = T> + Copy + Clone + Mul<Output = T>,
-{
-  pub fn dot(&self, other: Vector<T>) -> T {
-    self.x * other.x + self.y * other.y + self.z * other.z
-  }
-
-  // Returns the square of the magnitude (this avoids the square-root operation)
-  pub fn mag_squared(&self) -> T {
-    self.x * self.x + self.y * self.y + self.z * self.z
   }
 }
 
