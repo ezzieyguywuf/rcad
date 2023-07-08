@@ -120,7 +120,10 @@ impl Model {
     })
   }
 
-  pub fn close_edge_chain<T>(&mut self, chain: &EdgeChain<geom::BoundedLine<T>>) -> Face
+  pub fn close_edge_chain<T>(
+    &mut self,
+    chain: &EdgeChain<geom::BoundedLine<T>>,
+  ) -> err::Result<Face>
   where
     T: Copy
       + Add<Output = T>
@@ -133,12 +136,13 @@ impl Model {
       + PartialOrd
       + Sub<Output = T>,
   {
+    // let vo = chain.edges.
     let id = self.next_face_id;
     self.next_face_id += 1;
 
     let topo_face = TopoFace { id: FaceId(id) };
 
-    Face { topo_face }
+    Ok(Face { topo_face })
   }
 }
 

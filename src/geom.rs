@@ -1,4 +1,3 @@
-use num_traits::Zero;
 use std::cmp::{PartialEq, PartialOrd};
 use std::fmt::{Debug, Display};
 use std::ops::{Add, Div, Mul, Sub};
