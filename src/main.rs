@@ -15,14 +15,14 @@ fn main() {
     z: 30.0,
   };
   let p2 = geom::Point {
-    x: 5.0,
+    x: 15.0,
     y: 10.0,
-    z: 20.0,
+    z: 30.0,
   };
   let p3 = geom::Point {
-    x: 10.0,
-    y: 10.0,
-    z: 40.0,
+    x: 15.0,
+    y: 15.0,
+    z: 30.0,
   };
 
   let v0 = model.make_vertex(p0);

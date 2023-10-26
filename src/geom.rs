@@ -77,6 +77,7 @@ where
     + Copy
     + Clone
     + Div<Output = T>
+    + Display
     + Mul<Output = T>
     + PartialOrd
     + Sub<Output = T>,
@@ -110,9 +111,7 @@ where
     let b = self.dir.dot(other.dir) / self.dir.mag_squared();
     let c = Scalar(b) * self.dir - other.dir;
 
-    let u = (c.dot(other.origin)
-      - c.dot(self.origin)
-      - a * c.dot(self.origin)
+    let u = (c.dot(other.origin) - c.dot(self.origin) + a * c.dot(self.origin)
       - a * c.dot(self.origin + self.dir))
       / c.mag_squared();
     let t = a + u * b;
