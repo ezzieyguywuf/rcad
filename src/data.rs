@@ -27,12 +27,12 @@ pub struct EdgeChain<T>
 where
   T: geom::ParametrizedCurve,
 {
-  edges: Vec<Edge<T>>,
+  _edges: Vec<Edge<T>>,
 }
 
 #[derive(Debug)]
 pub struct Face {
-  topo_face: TopoFace,
+  _topo_face: TopoFace,
 }
 
 pub struct Model {
@@ -116,13 +116,13 @@ impl Model {
     let e1 = self.make_chord_edge(&v1, &v2);
 
     Ok(EdgeChain {
-      edges: vec![e0, e1],
+      _edges: vec![e0, e1],
     })
   }
 
   pub fn close_edge_chain<T>(
     &mut self,
-    chain: &EdgeChain<geom::BoundedLine<T>>,
+    _chain: &EdgeChain<geom::BoundedLine<T>>,
   ) -> err::Result<Face>
   where
     T: Copy
@@ -140,9 +140,11 @@ impl Model {
     let id = self.next_face_id;
     self.next_face_id += 1;
 
-    let topo_face = TopoFace { id: FaceId(id) };
+    let topo_face = TopoFace { _id: FaceId(id) };
 
-    Ok(Face { topo_face })
+    Ok(Face {
+      _topo_face: topo_face,
+    })
   }
 }
 
@@ -200,7 +202,7 @@ struct TopoEdge {
 
 #[derive(Debug)]
 struct TopoFace {
-  id: FaceId,
+  _id: FaceId,
 }
 
 impl std::fmt::Display for VertexId {
