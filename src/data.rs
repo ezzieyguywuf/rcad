@@ -4,10 +4,10 @@ use std::cmp::PartialOrd;
 use std::fmt::{Debug, Display};
 use std::ops::{Add, Div, Mul, Sub};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Vertex<T>
 where
-  T: Copy + Clone,
+  T: Copy + Clone + PartialEq,
 {
   topo_vertex: TopoVertex,
   pub point: geom::Point<T>,
@@ -27,7 +27,7 @@ pub struct EdgeChain<T>
 where
   T: geom::ParametrizedCurve,
 {
-  _edges: Vec<Edge<T>>,
+  edges: Vec<Edge<T>>,
 }
 
 #[derive(Debug)]
@@ -52,7 +52,7 @@ impl Model {
   }
   pub fn make_vertex<T>(&mut self, point: geom::Point<T>) -> Vertex<T>
   where
-    T: Copy + Clone,
+    T: Copy + Clone + PartialEq,
   {
     let id = self.next_vertex_id;
     self.next_vertex_id += 1;
@@ -68,6 +68,7 @@ impl Model {
       + Clone
       + Div<Output = T>
       + Debug
+      + PartialEq
       + Display
       + Mul<Output = T>
       + PartialOrd
@@ -97,10 +98,10 @@ impl Model {
       + Add<Output = T>
       + Clone
       + Display
+      + PartialEq
       + Debug
       + Div<Output = T>
       + Mul<Output = T>
-      + geom::ParametrizedCurve
       + PartialOrd
       + Sub<Output = T>,
     Vertex<T>: PartialEq,
@@ -116,7 +117,7 @@ impl Model {
     let e1 = self.make_chord_edge(&v1, &v2);
 
     Ok(EdgeChain {
-      _edges: vec![e0, e1],
+      edges: vec![e0, e1],
     })
   }
 
@@ -150,7 +151,7 @@ impl Model {
 
 impl<T> std::fmt::Display for Vertex<T>
 where
-  T: Copy + Clone + Debug,
+  T: Copy + Clone + Debug + PartialEq,
 {
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
     write!(
@@ -170,11 +171,25 @@ where
   }
 }
 
+impl<T> std::fmt::Display for EdgeChain<T>
+where
+  T: Display + geom::ParametrizedCurve,
+{
+  fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    write!(f, "EdgeChain")?;
+    for edge in &self.edges {
+      write!(f, "\n  {}", edge)?;
+    }
+
+    Ok(())
+  }
+}
+
 //======================================================================================================================
 //                                      Non-Public stuff (implementation details)
 //======================================================================================================================
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 struct VertexId(usize);
 #[derive(Copy, Clone, Debug)]
 struct EdgeId(usize);
@@ -182,7 +197,7 @@ struct EdgeId(usize);
 struct FaceId(usize);
 type Id = usize;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct TopoVertex {
   id: VertexId,
 }
